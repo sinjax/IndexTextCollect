@@ -49,9 +49,12 @@ public class CreateIndex {
     String indexType = args[0];
     String indexSource = args[1];
     int commitInterval = 1000000;
-    
+    int maxRead = -1;
     if (args.length >= 4) {
-      commitInterval = Integer.parseInt(args[3]);
+        maxRead = Integer.parseInt(args[3]);
+      }
+    if (args.length >= 5) {
+      commitInterval = Integer.parseInt(args[4]);
     }
     
     System.out.println("Commiting after indexing " + commitInterval + " docs");
@@ -94,10 +97,10 @@ public class CreateIndex {
                                                                // only
                                                                // once
     properties.setProperty("doc.index.props", "true");
-    // We want to store small-size fields like URL or even title  ...
     properties.setProperty("doc.stored", "true");
-    // but not the large one (great savings, 3x reduction in space)!
-    properties.setProperty("doc.body.stored", "false");
+    properties.setProperty("doc.body.stored", "true");
+    properties.setProperty("doc.tokenized", "false");
+    properties.setProperty("doc.body.tokenized", "true");
    
     ContentSource source = CreateSource(indexType, indexSource, properties);
     
@@ -122,6 +125,11 @@ public class CreateIndex {
       while ((doc = docMaker.makeDocument()) != null) {
         indexWriter.addDocument(doc);
         ++count;
+        if(maxRead != -1 && count>=maxRead){
+        	indexWriter.commit();
+        	System.out.println("Exiting early with docs: " + count);
+        	break;
+        }
         if (count % 5000 == 0) {
           System.out.println("Indexed " + count + " documents in "
                               + (System.currentTimeMillis() - start) + " ms");
