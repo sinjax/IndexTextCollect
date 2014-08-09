@@ -41,7 +41,7 @@ public class WikipediaIndexTool implements Closeable {
 	private SimpleWikipediaSource wikipediaSource;
 
 
-	public WikipediaIndexTool(String[] args) {
+	public WikipediaIndexTool(String[] args) throws Exception {
 		CmdLineParser parser = new CmdLineParser(this);
 		try {
 			parser.parseArgument(args);
@@ -50,6 +50,7 @@ public class WikipediaIndexTool implements Closeable {
 		} catch (CmdLineException | IOException e) {
 			System.err.println("Error: " + e.getMessage());
 			parser.printUsage(System.err);
+			throw e;
 		}
 	}
 
@@ -79,6 +80,7 @@ public class WikipediaIndexTool implements Closeable {
 	public static void main(String[] args) throws IOException {
 		try (WikipediaIndexTool tool = new WikipediaIndexTool(args)) {
 			tool.start();
+		} catch (Exception e) {
 		}
 	}
 
@@ -109,6 +111,7 @@ public class WikipediaIndexTool implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-		this.luceneIndexWriter.close();
+		if(luceneIndexWriter!=null)
+			this.luceneIndexWriter.close();
 	}
 }
