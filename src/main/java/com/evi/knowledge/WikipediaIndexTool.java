@@ -90,6 +90,9 @@ public class WikipediaIndexTool implements Closeable {
 					done++;
 					Document doc = this.wikipediaSource.getNextDocument();
 					this.luceneIndexWriter.writeDocument(doc);
+					if(done % 1000 == 0){
+						System.out.printf("Seen %d documents\n",done);
+					}
 					if(done % commitBatchSize == 0){
 						this.luceneIndexWriter.commit();
 					}
