@@ -176,14 +176,6 @@ public class SimpleWikipediaSource implements Closeable {
 				break;
 			case BODY:
 				body = contents.toString();
-				// workaround that startswith doesn't have an ignore case
-				// option, get at least 20 chars.
-				String startsWith = body.substring(0,
-						Math.min(10, contents.length())).toLowerCase(
-						Locale.ROOT);
-				if (startsWith.startsWith("#redirect")) {
-					body = null;
-				}
 				break;
 			case DATE:
 				time = time(contents.toString());
