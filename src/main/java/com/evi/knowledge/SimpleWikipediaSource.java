@@ -55,11 +55,7 @@ import com.evi.knowledge.lucene.LuceneUtils;
 
 /**
  * A {@link ContentSource} which reads the English Wikipedia dump. You can read
- * the .bz2 file directly (it will be decompressed on the fly). Config
- * properties:
- * <ul>
- * <li>keep.image.only.docs=false|true (default <b>true</b>).
- * <li>docs.file=&lt;path to the file&gt;
+ * the .bz2 file directly (it will be decompressed on the fly). 
  * </ul>
  */
 public class SimpleWikipediaSource implements Closeable {
@@ -155,7 +151,7 @@ public class SimpleWikipediaSource implements Closeable {
 				// the body must be null and we either are keeping image docs or
 				// the
 				// title does not start with Image:
-				if (body != null && (keepImages || !title.startsWith("Image:"))) {
+				if (body != null) {
 					WikiDataTuple tmpTuple = new WikiDataTuple();
 					tmpTuple.title = title;
 					tmpTuple.date = time;
@@ -323,7 +319,6 @@ public class SimpleWikipediaSource implements Closeable {
 	}
 
 	private File file;
-	private boolean keepImages = true;
 	private InputStream is;
 	private Parser parser = new Parser();
 

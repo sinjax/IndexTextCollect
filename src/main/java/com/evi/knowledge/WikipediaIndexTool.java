@@ -3,6 +3,8 @@ package com.evi.knowledge;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -34,8 +36,66 @@ public class WikipediaIndexTool implements Closeable {
 	@Option(name = "-commit-batch-size", usage = "How many documents to index before a commit")
 	private int commitBatchSize = 100000;
 	
-	@Option(name = "-ignore-redirect", usage = "don't add the redirect pages")
-	private boolean ignoreRedirects = false;
+	@Option(name = "-ignore", usage="Modes to ignore")
+	private List<IgnoreMode> toIgnore;
+	enum IgnoreMode{
+		REDIRECT {
+			@Override
+			public boolean check(Document doc) {
+				IndexableField body = doc.getField("body");
+				String bodyStr = body.stringValue();
+				if(bodyStr.length() > 9){						
+					String subBody = bodyStr.substring(0,9);
+					if(subBody.toLowerCase().startsWith("#redirect")){
+						return true;
+					}
+				}
+				return false;
+			}
+		}, 
+		FILE {
+			@Override
+			public boolean check(Document doc) {
+				String title = doc.getField("title").stringValue();
+				if(title.startsWith("File:")){
+					return true;
+				}
+				return false;
+			}
+		}, 
+		IMAGE {
+			@Override
+			public boolean check(Document doc) {
+				String title = doc.getField("title").stringValue();
+				if(title.startsWith("Image:")){
+					return true;
+				}
+				return false;
+			}
+		},
+		WIKI {
+			@Override
+			public boolean check(Document doc) {
+				String title = doc.getField("title").stringValue();
+				if(title.startsWith("Wikipedia:")){
+					return true;
+				}
+				return false;
+			}
+		},
+		HELP {
+			@Override
+			public boolean check(Document doc) {
+				String title = doc.getField("title").stringValue();
+				if(title.startsWith("Help:")){
+					return true;
+				}
+				return false;
+			}
+		}
+		;
+		public abstract boolean check(Document doc);
+	}
 	
 	private File wikipediaFile;
 
@@ -44,8 +104,6 @@ public class WikipediaIndexTool implements Closeable {
 	private LuceneIndexCreator luceneIndexWriter;
 
 	private SimpleWikipediaSource wikipediaSource;
-
-
 
 	public WikipediaIndexTool(String[] args) throws Exception {
 		CmdLineParser parser = new CmdLineParser(this);
@@ -72,7 +130,9 @@ public class WikipediaIndexTool implements Closeable {
 		if(outputLucene == null){
 			outputLucene = wikipediaLocation + "-lucene";
 		}
-		
+		if(this.toIgnore==null){
+			this.toIgnore = new ArrayList<IgnoreMode>();
+		}
 		File file = new File(outputLucene);
 		if(file.exists()){
 			FileUtils.deleteDirectory(file);
@@ -93,33 +153,29 @@ public class WikipediaIndexTool implements Closeable {
 
 	private void start() {
 		int done = 0;
-		int redirects = 0;
+		int ignored = 0;
 		try {
 			while (limit == -1 || done < limit) {
 				try {
-					done++;
-					boolean redirect = false;
 					Document doc = this.wikipediaSource.getNextDocument();
-					IndexableField body = doc.getField("body");
-					String bodyStr = body.stringValue();
-					if(bodyStr.length() > 9){						
-						String subBody = bodyStr.substring(0,9);
-						if(subBody.toLowerCase().startsWith("#redirect")){
-							redirects ++;
-							redirect = true;
+					done++;
+					boolean ignoredDoc = false;
+					for (IgnoreMode igMode : this.toIgnore) {
+						if(igMode.check(doc)){
+							ignoredDoc = true;
+							break;
 						}
 					}
-					
-					if(!ignoreRedirects || !redirect){
+					if(!ignoredDoc){
 						this.luceneIndexWriter.writeDocument(doc);
 					} else{
 						done--;
-						redirects--; 
+						ignored++; 
 					}
-					if(done % 1000 == 0 && !redirect){
-						System.out.printf("Seen %d, redirects %d, sample: %s\n",done, redirects, doc.getField("title").stringValue());
+					if(done % 1000 == 0 && !ignoredDoc){
+						System.out.printf("Seen %d, ignored %d, sample: %s\n",done, ignored, doc.getField("title").stringValue());
 					}
-					if(done % commitBatchSize == 0 && !redirect){
+					if(done % commitBatchSize == 0 && !ignoredDoc){
 						this.luceneIndexWriter.commit();
 					}
 				} catch (NoMoreDataException e) {
