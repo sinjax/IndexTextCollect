@@ -350,12 +350,10 @@ public class SimpleWikipediaSource implements Closeable {
 		return doc;
 	}
 
-	public void resetInputs() throws IOException {
-		is = openInputStream();
-	}
 
 	/** Open the input stream. */
 	protected InputStream openInputStream() throws IOException {
+		System.out.println("Opening input stream to: " + file);
 		return StreamUtils.inputStream(file);
 	}
 
