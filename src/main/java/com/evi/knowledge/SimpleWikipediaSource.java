@@ -344,6 +344,7 @@ public class SimpleWikipediaSource implements Closeable {
 		doc.add(LuceneUtils.createTextField("id", tuple.id));
 		doc.add(LuceneUtils.createTextField("title", tuple.title));
 		doc.add(LuceneUtils.createDateField("date", tuple.date));
+		doc.add(LuceneUtils.createNotStoredTextField("bodykeyword", tuple.body));
 		doc.add(LuceneUtils.createTextField("body", tuple.body));
 		doc.add(LuceneUtils.createStringField("url", tuple.getWikiURL()));
 		return doc;

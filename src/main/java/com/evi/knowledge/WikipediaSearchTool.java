@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.benchmark.byTask.feeds.NoMoreDataException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
@@ -112,12 +112,12 @@ public class WikipediaSearchTool implements Closeable {
 		try (WikipediaSearchTool tool = new WikipediaSearchTool(args)) {
 			tool.start();
 		} catch(Exception e){
-			
+			e.printStackTrace();
 		}
 	}
 
 	private void start() throws IOException, ParseException {
-		QueryParser parser = new QueryParser(Version.LUCENE_46, searchField, null);
+		QueryParser parser = new QueryParser(Version.LUCENE_46, searchField, new StandardAnalyzer(Version.LUCENE_46));
 		parser.setLowercaseExpandedTerms(false);
 		Query query = parser.parse(queryStr);
 		TopDocs hits = this.searcher.search(query , limit);

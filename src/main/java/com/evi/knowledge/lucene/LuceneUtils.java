@@ -17,6 +17,10 @@ public class LuceneUtils {
 		return newField(name, value, TextField.TYPE_STORED);
 	}
 	
+	public static Field createNotStoredTextField(String name, String value){
+		return newField(name, value, TextField.TYPE_NOT_STORED);
+	}
+	
 	public static Field newField(String name, String value, FieldType type) {
 		return new Field(name, value, type);
 	}
