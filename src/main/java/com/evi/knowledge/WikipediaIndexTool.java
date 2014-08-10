@@ -36,6 +36,9 @@ public class WikipediaIndexTool implements Closeable {
 	@Option(name = "-commit-batch-size", usage = "How many documents to index before a commit")
 	private int commitBatchSize = 100000;
 	
+	@Option(name = "-log-wait-size", usage = "How many documents to index before printing to the logs about it")
+	private int logWaitSize = 1000;
+	
 	@Option(name = "-ignore", usage="Modes to ignore")
 	private List<IgnoreMode> toIgnore;
 	enum IgnoreMode{
@@ -105,6 +108,8 @@ public class WikipediaIndexTool implements Closeable {
 
 	private SimpleWikipediaSource wikipediaSource;
 
+	
+
 	public WikipediaIndexTool(String[] args) throws Exception {
 		CmdLineParser parser = new CmdLineParser(this);
 		try {
@@ -173,7 +178,7 @@ public class WikipediaIndexTool implements Closeable {
 						done--;
 						ignored++; 
 					}
-					if(done % 1 == 0 && !ignoredDoc){
+					if(done % logWaitSize  == 0 && !ignoredDoc){
 						System.out.printf("Seen %d, ignored %d, sample: %s\n",done, ignored, doc.getField("title").stringValue());
 					}
 					if(done % commitBatchSize == 0 && !ignoredDoc){
