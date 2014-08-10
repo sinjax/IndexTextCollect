@@ -141,6 +141,7 @@ public class WikipediaIndexTool implements Closeable {
 		luceneIndexWriter = new LuceneIndexCreator(this.luceneIndex);
 		this.wikipediaFile = new File(this.wikipediaLocation);
 		this.wikipediaSource = new SimpleWikipediaSource(this.wikipediaFile);
+		this.wikipediaSource.resetInputs();
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -172,7 +173,7 @@ public class WikipediaIndexTool implements Closeable {
 						done--;
 						ignored++; 
 					}
-					if(done % 1000 == 0 && !ignoredDoc){
+					if(done % 1 == 0 && !ignoredDoc){
 						System.out.printf("Seen %d, ignored %d, sample: %s\n",done, ignored, doc.getField("title").stringValue());
 					}
 					if(done % commitBatchSize == 0 && !ignoredDoc){

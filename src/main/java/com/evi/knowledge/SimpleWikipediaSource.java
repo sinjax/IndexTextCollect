@@ -55,22 +55,25 @@ import com.evi.knowledge.lucene.LuceneUtils;
 
 /**
  * A {@link ContentSource} which reads the English Wikipedia dump. You can read
- * the .bz2 file directly (it will be decompressed on the fly). 
- * </ul>
+ * the .bz2 file directly (it will be decompressed on the fly). </ul>
  */
 public class SimpleWikipediaSource implements Closeable {
 
-	private class WikiDataTuple{
+	private class WikiDataTuple {
 		String title;
 		String id;
 		Date date;
 		String body;
+
 		public String getWikiURL() {
-			return String.format("http://en.wikipedia.org/wiki/%s",title.replace(" ", "_"));
+			return String.format("http://en.wikipedia.org/wiki/%s",
+					title.replace(" ", "_"));
 		}
 	}
+
 	private class Parser extends DefaultHandler implements Runnable {
-		SimpleDateFormat parserSDF=new SimpleDateFormat("dd-MM-YYYY HH:mm:ss.SSS");
+		SimpleDateFormat parserSDF = new SimpleDateFormat(
+				"dd-MM-YYYY HH:mm:ss.SSS");
 		private Thread t;
 		private boolean threadDone;
 		private boolean stopped = false;
@@ -81,6 +84,7 @@ public class SimpleWikipediaSource implements Closeable {
 		private String body;
 		private Date time;
 		private String id;
+		private boolean forever = false;
 
 		WikiDataTuple next() throws NoMoreDataException {
 			if (t == null) {
@@ -129,7 +133,7 @@ public class SimpleWikipediaSource implements Closeable {
 			buffer.append(' ');
 			buffer.append(original.substring(11, 19));
 			buffer.append(".000");
-			
+
 			try {
 				return parserSDF.parse(buffer.toString());
 			} catch (ParseException e) {
@@ -214,6 +218,7 @@ public class SimpleWikipediaSource implements Closeable {
 							reader.parse(new InputSource(
 									new BufferedReader(new InputStreamReader(
 											localFileIS, decoder))));
+							System.out.println("Done parsing!");
 						} catch (IOException ioe) {
 							synchronized (SimpleWikipediaSource.this) {
 								if (localFileIS != is) {
@@ -226,7 +231,7 @@ public class SimpleWikipediaSource implements Closeable {
 						}
 					}
 					synchronized (this) {
-						if (stopped) {
+						if (stopped || !forever ) {
 							nmde = new NoMoreDataException();
 							notify();
 							return;
@@ -295,7 +300,6 @@ public class SimpleWikipediaSource implements Closeable {
 	// should not be part of the tuple, we should define them after LENGTH.
 	private static final int PAGE = LENGTH + 1;
 
-
 	static {
 		ELEMENTS.put("page", Integer.valueOf(PAGE));
 		ELEMENTS.put("text", Integer.valueOf(BODY));
@@ -345,6 +349,9 @@ public class SimpleWikipediaSource implements Closeable {
 		return doc;
 	}
 
+	public void resetInputs() throws IOException {
+		is = openInputStream();
+	}
 
 	/** Open the input stream. */
 	protected InputStream openInputStream() throws IOException {
