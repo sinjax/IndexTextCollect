@@ -7,30 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.benchmark.byTask.feeds.NoMoreDataException;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
-import org.apache.lucene.util.automaton.Automaton;
-import org.apache.lucene.util.automaton.AutomatonProvider;
-import org.apache.lucene.util.automaton.RegExp;
-import org.kohsuke.args4j.CmdLineException;
+
 import org.kohsuke.args4j.CmdLineOptionsProvider;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.ProxyOptionHandler;
-
-import com.evi.knowledge.lucene.LuceneIndexCreator;
 
 public class WikipediaSearchTool implements Closeable {
 	@Option(name = "-index", required=true, usage = "Where to put the wikipedia index, defaults to <dump>-lucene")
@@ -38,6 +29,9 @@ public class WikipediaSearchTool implements Closeable {
 	
 	@Option(name = "-limit", usage = "How many to find")
 	int limit = 100;
+	
+	@Option(name = "-lucene", usage="The lucene version")
+	Version lucene = Version.LUCENE_46;
 	
 	enum OutputMode implements CmdLineOptionsProvider{
 		JSON {
@@ -117,7 +111,7 @@ public class WikipediaSearchTool implements Closeable {
 	}
 
 	private void start() throws IOException, ParseException {
-		QueryParser parser = new QueryParser(Version.LUCENE_46, searchField, new StandardAnalyzer(Version.LUCENE_46));
+		QueryParser parser = new QueryParser(lucene, searchField, new StandardAnalyzer(lucene));
 		parser.setLowercaseExpandedTerms(false);
 		Query query = parser.parse(queryStr);
 		TopDocs hits = this.searcher.search(query , limit);

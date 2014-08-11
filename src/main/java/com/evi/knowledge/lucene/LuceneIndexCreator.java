@@ -8,13 +8,9 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.SimpleFSDirectory;
@@ -28,11 +24,11 @@ public class LuceneIndexCreator implements Closeable{
 	private Map<String, Analyzer> maps = new HashMap<String,Analyzer>();
 	
 
-	public LuceneIndexCreator(File file) throws IOException {
+	public LuceneIndexCreator(File file, Version lucene) throws IOException {
 		this.directory = new SimpleFSDirectory(file);
 		PerFieldAnalyzerWrapper fieldAnalyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer(),maps);
-		maps.put("body", new StandardAnalyzer(Version.LUCENE_46));
-		this.conf = new IndexWriterConfig(Version.LUCENE_46, fieldAnalyzer);
+		maps.put("body", new StandardAnalyzer(lucene));
+		this.conf = new IndexWriterConfig(lucene, fieldAnalyzer);
 		this.writer = new IndexWriter(directory, conf);
 	}
 	

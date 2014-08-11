@@ -11,6 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.lucene.benchmark.byTask.feeds.NoMoreDataException;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.util.Version;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -41,6 +42,10 @@ public class WikipediaIndexTool implements Closeable {
 	
 	@Option(name = "-ignore", usage="Modes to ignore")
 	private List<IgnoreMode> toIgnore;
+	
+	@Option(name = "-lucene", usage="The lucene version")
+	Version lucene = Version.LUCENE_46;
+	
 	enum IgnoreMode{
 		REDIRECT {
 			@Override
@@ -143,7 +148,7 @@ public class WikipediaIndexTool implements Closeable {
 			FileUtils.deleteDirectory(file);
 		}
 		this.luceneIndex = file;
-		luceneIndexWriter = new LuceneIndexCreator(this.luceneIndex);
+		luceneIndexWriter = new LuceneIndexCreator(this.luceneIndex,lucene);
 		this.wikipediaFile = new File(this.wikipediaLocation);
 		this.wikipediaSource = new SimpleWikipediaSource(this.wikipediaFile);
 		this.wikipediaSource.resetInputs();
