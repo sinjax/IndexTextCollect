@@ -24,7 +24,7 @@ import org.terrier.utility.ApplicationSetup;
 
 
 public class TerrierIndexer {
-	private static final int R_IND_LEN = 100;
+	private static final int R_IND_LEN = 1000;
 
 	public static void main(String[] args) throws IOException {
 		BasicTerrierConfig.configure();
@@ -41,7 +41,7 @@ public class TerrierIndexer {
 		manager.setProperty("ignore.low.idf.terms", "false");
 		SearchRequest request = manager.newSearchRequest("foo");
 		
-		request.setQuery(createMapDocument("query", "tree cat", R_IND_LEN).asQuery());
+		request.setQuery(createMapDocument("query", "bee", R_IND_LEN).asQuery());
 		
 		request.addMatchingModel("Matching", "TF_IDF");
 		manager.runPreProcessing(request);
@@ -71,6 +71,8 @@ public class TerrierIndexer {
 		TIntIntHashMap map = new TIntIntHashMap();
 		for (String s : string.split(" ")) {
 			Random rng = new Random(s.hashCode());
+			map.adjustOrPutValue(rng.nextInt(len), 1, 1);
+			map.adjustOrPutValue(rng.nextInt(len), 1, 1);
 			map.adjustOrPutValue(rng.nextInt(len), 1, 1);
 			map.adjustOrPutValue(rng.nextInt(len), 1, 1);
 		}
