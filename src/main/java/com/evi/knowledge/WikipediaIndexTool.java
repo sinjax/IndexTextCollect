@@ -44,7 +44,7 @@ public class WikipediaIndexTool implements Closeable {
 	private List<IgnoreMode> toIgnore;
 	
 	@Option(name = "-lucene", usage="The lucene version")
-	Version lucene = Version.LUCENE_46;
+	Version lucene = Version.LUCENE_CURRENT;
 	
 	enum IgnoreMode{
 		REDIRECT {

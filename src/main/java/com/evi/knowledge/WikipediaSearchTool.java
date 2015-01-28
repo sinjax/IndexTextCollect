@@ -31,7 +31,7 @@ public class WikipediaSearchTool implements Closeable {
 	int limit = 100;
 	
 	@Option(name = "-lucene", usage="The lucene version")
-	Version lucene = Version.LUCENE_46;
+	Version lucene = Version.LUCENE_CURRENT;
 	
 	enum OutputMode implements CmdLineOptionsProvider{
 		JSON {
